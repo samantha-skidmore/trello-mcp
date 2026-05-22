@@ -23,6 +23,9 @@ export function register(server: McpServer, client: TrelloClient) {
           checklist_fields: "id,name,pos",
           members: "true",
           member_fields: "fullName,username",
+          attachments: "true",
+          attachment_fields: "id,name,url,date,pos",
+          customFieldItems: "true",
         });
         return textResult(card);
       } catch (err) {
