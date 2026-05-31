@@ -98,3 +98,32 @@ Decision tree:
 - **CARD-STATUS-LOG.md:** Card #27 row reflects this decision
 - **QuickOrder backlog file:** `QUICKORDER-VISIBLE-OPEN-ITEMS.md` has a T3 review row pointing here
 - **Outlook calendar:** Recurring quarterly event "Trello MCP — npm audit re-check" starting Aug 19, 2026
+
+---
+
+## Response truncation on get_board_cards (informational)
+
+**Behavior:** Calls to `mcp__trello__get_board_cards` return ~588K–614K 
+characters for the QuickOrder board (~190+ cards). This exceeds 
+Claude Code's maximum-allowed inline token output, triggering CC's 
+tool-result file dump pattern. CC saves the full response to 
+`~/.claude/projects/.../tool-results/mcp-trello-get_board_cards-<ts>.txt` 
+and emits a truncation warning.
+
+**Impact:** No functional impact — CC reads the dump file via `jq` 
+queries and proceeds normally. Adds ~3–5 seconds per 
+`get_board_cards` call vs an inline-fit response (file write + 
+jq read overhead). Routine and expected; not a bug.
+
+**Mitigation candidates** (not pursued, low priority):
+- Source-edit the MCP server to support pagination on `get_board_cards`
+- Source-edit to add a `fields` parameter that filters the response 
+  to only requested fields (reducing payload size)
+- Either edit would require regenerating `dist/index.js` and 
+  re-registering the MCP server with Claude Code
+
+**Status:** Accept the overhead. Captured as known behavior so 
+future debugging doesn't chase it.
+
+**Discovered:** Trello Ops Part 5 (May 30, 2026) — routine across 
+every multi-card session since then.
